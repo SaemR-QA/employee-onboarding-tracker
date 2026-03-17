@@ -21,7 +21,7 @@ def load_user(user_id):
 
 @app.route("/")
 def home():
-    return redirect(url_for("employees"))
+    return redirect(url_for("login"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -124,7 +124,40 @@ def delete_employee(employee_id):
 def forbidden(error):
     return "<h1>403 Forbidden</h1><p>You do not have permission to access this page.</p>", 403
 
+def seed_default_data():
+    if not User.query.filter_by(email="admin@test.com").first():
+        admin = User(email="admin@test.com", role="admin")
+        admin.set_password("Admin123!")
+        db.session.add(admin)
+
+    if not User.query.filter_by(email="user@test.com").first():
+        user = User(email="user@test.com", role="user")
+        user.set_password("User123!")
+        db.session.add(user)
+
+    if Employee.query.count() == 0:
+        employee1 = Employee(
+            full_name="Jane Doe",
+            email="jane@example.com",
+            department="HR",
+            start_date="2026-03-01",
+            status="Active",
+        )
+        employee2 = Employee(
+            full_name="John Doe",
+            email="john@example.com",
+            department="IT",
+            start_date="2026-03-05",
+            status="Pending",
+        )
+        db.session.add(employee1)
+        db.session.add(employee2)
+
+    db.session.commit()
+
+with app.app_context():
+    db.create_all()
+    seed_default_data()
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
